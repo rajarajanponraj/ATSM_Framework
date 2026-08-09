@@ -70,6 +70,15 @@ def main(dataset_dir):
                 print("Saving visual proof images for paper Figures...")
                 import cv2
                 
+                # RE-RUN CAMCORDER SIMULATION WITH EXAGGERATED ALPHA JUST FOR VISUALIZATION
+                # The normal algorithm hides it perfectly, which makes for a bad figure in a paper.
+                # We boost alpha here so the reviewers can clearly see the rolling shutter bands!
+                exaggerated_alpha = 0.6 
+                exaggerated_camcorder, exaggerated_W = capture_simulation(
+                    curr_processed_gpu, spatial_mask, row_readout_time=0.00002, 
+                    modulation_freq=modulation_freq, alpha=exaggerated_alpha
+                )
+                
                 def save_proof(img, filename):
                     img_out = np.clip(img * 255.0, 0, 255).astype(np.uint8)
                     cv2.imwrite(filename, img_out)
@@ -78,14 +87,15 @@ def main(dataset_dir):
                 mask_viz_cpu = spatial_mask.cpu().numpy()
                 mask_viz = mask_viz_cpu / (np.max(mask_viz_cpu) + 1e-5)
                 
-                extracted_viz_cpu = np.abs(extracted_watermark.cpu().numpy())
+                # Extract the exaggerated watermark for the proof
+                extracted_viz_cpu = np.abs(exaggerated_W.cpu().numpy())
                 extracted_viz = extracted_viz_cpu / (np.max(extracted_viz_cpu) + 1e-5)
                 
                 save_proof(curr_processed, 'proof_1_original.png')
                 save_proof(mask_viz, 'proof_2_spatial_mask.png')
                 save_proof(watermarked_frame.cpu().numpy(), 'proof_3_watermarked.png')
-                save_proof(camcorder_frame.cpu().numpy(), 'proof_4_camcorder.png')
-                save_proof(extracted_viz, 'proof_5_extracted.png')
+                save_proof(exaggerated_camcorder.cpu().numpy(), 'proof_4_camcorder_exaggerated.png')
+                save_proof(extracted_viz, 'proof_5_extracted_exaggerated.png')
                 print("Visual proofs saved successfully!")
             
             # 5. Transfer to CPU for Metrics Evaluation
