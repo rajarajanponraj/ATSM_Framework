@@ -5,6 +5,7 @@ from data_loader import frame_generator
 from preprocessing import preprocess_frame
 from feature_extraction import temporal_motion_estimation, spatial_feature_extraction
 from watermark import generate_computational_watermark, embed_watermark
+from evaluation import capture_simulation, extract_watermark
 
 def main(dataset_dir):
     print("Starting Adaptive Temporal-Spatial Modulation (ATSM) Framework...")
@@ -30,26 +31,31 @@ def main(dataset_dir):
             temporal_activity = temporal_motion_estimation(prev_processed_frame, curr_processed)
             
             # 4. Generate and Embed Watermark
-            # Adaptive strength: weaker where there is high motion to preserve visual quality
             adaptive_alpha = 0.05 * (1.0 - np.mean(temporal_activity))
-            
-            # Temporal sequence value S(t) for this frame
             fps_assumption = 1000.0
-            modulation_freq = 120.0 # High frequency to alias with rolling shutter
+            modulation_freq = 120.0
             S_t = np.sin(2 * np.pi * modulation_freq * (idx / fps_assumption))
-            
-            # Generate W(x,y,t)
             watermark = generate_computational_watermark(spatial_mask, S_t, alpha=adaptive_alpha)
-            
-            # Embed watermark I_watermarked = I_original + W
             watermarked_frame = embed_watermark(curr_processed, watermark)
             
-            # TODO: Simulate Camcorder Capture
-            # TODO: Extract Watermark
+            # 5. Simulate Camcorder Capture & Extract Watermark
+            # Camcorder sees aliased watermark due to rolling shutter
+            camcorder_frame, actual_aliased_watermark = capture_simulation(
+                curr_processed, spatial_mask, row_readout_time=0.00002, 
+                modulation_freq=modulation_freq, alpha=adaptive_alpha
+            )
+            
+            # The cinema owner extracts the watermark from the pirated camcorder recording
+            extracted_watermark = extract_watermark(camcorder_frame, curr_processed)
+            
+            # For demonstration, verify if extraction was successful
+            if idx == 50:
+                diff = np.mean(np.abs(extracted_watermark - actual_aliased_watermark))
+                print(f"   -> Frame 50 Extraction check (Mean Absolute Error): {diff:.6f}")
             
         prev_processed_frame = curr_processed
         
-    # TODO: Evaluate Performance
+    # TODO: Evaluate Performance (Phase 6)
     print("ATSM Execution Completed.")
 
 if __name__ == "__main__":
