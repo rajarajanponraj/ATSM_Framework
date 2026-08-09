@@ -40,6 +40,27 @@ def main(dataset_dir):
             
             extracted_watermark = extract_watermark(camcorder_frame, curr_processed)
             
+            # Save visual proofs for the research paper (on frame 50)
+            if idx == 50:
+                print("Saving visual proof images for paper Figures...")
+                import cv2
+                
+                def save_proof(img, filename):
+                    img_out = np.clip(img * 255.0, 0, 255).astype(np.uint8)
+                    cv2.imwrite(filename, img_out)
+                
+                # Normalize mask and extraction for clear visibility in the paper
+                mask_viz = spatial_mask / (np.max(spatial_mask) + 1e-5)
+                extracted_viz = np.abs(extracted_watermark)
+                extracted_viz = extracted_viz / (np.max(extracted_viz) + 1e-5)
+                
+                save_proof(curr_processed, 'proof_1_original.png')
+                save_proof(mask_viz, 'proof_2_spatial_mask.png')
+                save_proof(watermarked_frame, 'proof_3_watermarked.png')
+                save_proof(camcorder_frame, 'proof_4_camcorder.png')
+                save_proof(extracted_viz, 'proof_5_extracted.png')
+                print("Visual proofs saved successfully!")
+            
             # Phase 6: Performance Evaluation per frame
             metrics = run_evaluation(
                 original_frame=curr_processed,
