@@ -9,6 +9,7 @@ import math
 from data_loader import frame_generator
 from preprocessing import preprocess_frame
 from evaluation import run_evaluation
+from metrics_plotter import generate_graphs
 
 # GPU Modules (Massive matrix mathematics)
 from feature_extraction_gpu import temporal_motion_estimation, spatial_feature_extraction
@@ -118,41 +119,7 @@ def main(dataset_dir):
             
         # Generate Graphs for the research paper
         print("Generating performance graphs...")
-        frames_x = np.arange(len(all_metrics))
-        plt.figure(figsize=(12, 8))
-        
-        plt.subplot(2, 2, 1)
-        plt.plot(frames_x, [m['Accuracy'] for m in all_metrics], color='blue')
-        plt.title('Extraction Accuracy over Time')
-        plt.xlabel('Frame Number')
-        plt.ylabel('Accuracy')
-        plt.grid(True)
-        
-        plt.subplot(2, 2, 2)
-        psnr_vals = [p if p != float('inf') else 50.0 for p in [m['PSNR'] for m in all_metrics]]
-        plt.plot(frames_x, psnr_vals, color='green')
-        plt.title('Camcorder PSNR over Time')
-        plt.xlabel('Frame Number')
-        plt.ylabel('PSNR (dB)')
-        plt.grid(True)
-        
-        plt.subplot(2, 2, 3)
-        plt.plot(frames_x, [m['SSIM'] for m in all_metrics], color='orange')
-        plt.title('Structural Similarity (SSIM)')
-        plt.xlabel('Frame Number')
-        plt.ylabel('SSIM')
-        plt.grid(True)
-        
-        plt.subplot(2, 2, 4)
-        plt.plot(frames_x, [m['BER'] for m in all_metrics], color='red')
-        plt.title('Bit Error Rate (BER)')
-        plt.xlabel('Frame Number')
-        plt.ylabel('BER')
-        plt.grid(True)
-        
-        plt.tight_layout()
-        plt.savefig('atsm_metrics_graph.png', dpi=300)
-        print("Graph saved successfully as 'atsm_metrics_graph.png' in your current directory!")
+        generate_graphs(all_metrics)
         
     else:
         print("No frames were processed.")

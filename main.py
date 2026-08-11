@@ -7,6 +7,7 @@ from preprocessing import preprocess_frame
 from feature_extraction import temporal_motion_estimation, spatial_feature_extraction
 from watermark import generate_computational_watermark, embed_watermark
 from evaluation import capture_simulation, extract_watermark, run_evaluation
+from metrics_plotter import generate_graphs
 
 def main(dataset_dir):
     print("Starting Adaptive Temporal-Spatial Modulation (ATSM) Framework...")
@@ -81,45 +82,7 @@ def main(dataset_dir):
             
         # Generate Graphs for the research paper
         print("Generating performance graphs...")
-        frames_x = np.arange(len(all_metrics))
-        plt.figure(figsize=(12, 8))
-        
-        # Plot 1: Accuracy over time
-        plt.subplot(2, 2, 1)
-        plt.plot(frames_x, [m['Accuracy'] for m in all_metrics], color='blue')
-        plt.title('Extraction Accuracy over Time')
-        plt.xlabel('Frame Number')
-        plt.ylabel('Accuracy')
-        plt.grid(True)
-        
-        # Plot 2: PSNR over time
-        plt.subplot(2, 2, 2)
-        psnr_vals = [p if p != float('inf') else 50.0 for p in [m['PSNR'] for m in all_metrics]]
-        plt.plot(frames_x, psnr_vals, color='green')
-        plt.title('Camcorder PSNR over Time')
-        plt.xlabel('Frame Number')
-        plt.ylabel('PSNR (dB)')
-        plt.grid(True)
-        
-        # Plot 3: SSIM over time
-        plt.subplot(2, 2, 3)
-        plt.plot(frames_x, [m['SSIM'] for m in all_metrics], color='orange')
-        plt.title('Structural Similarity (SSIM)')
-        plt.xlabel('Frame Number')
-        plt.ylabel('SSIM')
-        plt.grid(True)
-        
-        # Plot 4: Bit Error Rate (BER)
-        plt.subplot(2, 2, 4)
-        plt.plot(frames_x, [m['BER'] for m in all_metrics], color='red')
-        plt.title('Bit Error Rate (BER)')
-        plt.xlabel('Frame Number')
-        plt.ylabel('BER')
-        plt.grid(True)
-        
-        plt.tight_layout()
-        plt.savefig('atsm_metrics_graph.png', dpi=300)
-        print("Graph saved successfully as 'atsm_metrics_graph.png' in your current directory!")
+        generate_graphs(all_metrics)
         
     else:
         print("No frames were processed.")
